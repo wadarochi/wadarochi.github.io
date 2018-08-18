@@ -1,0 +1,1365 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.4.0" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.4.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.4.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.4.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.4.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '6.4.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="问题来源跳转，尤其是条件跳转有可能会打断CPU指令的流水线执行，所以在性能要求比较高的代码中，我都是系统尽量不要出现if，那实在要出现怎么办了，比如有如下代码：1234for component in components:    # 判断是否要处理component数据    if component.enabled:        # do sth... 这种情况下我是应该写成上面这种形式，还">
+<meta name="keywords" content="python">
+<meta property="og:type" content="article">
+<meta property="og:title" content="怎样写python的if语句比较高效？">
+<meta property="og:url" content="https://wadarochi.github.io/2017/10/15/effective-python-if/index.html">
+<meta property="og:site_name" content="PT&#39;s Blog">
+<meta property="og:description" content="问题来源跳转，尤其是条件跳转有可能会打断CPU指令的流水线执行，所以在性能要求比较高的代码中，我都是系统尽量不要出现if，那实在要出现怎么办了，比如有如下代码：1234for component in components:    # 判断是否要处理component数据    if component.enabled:        # do sth... 这种情况下我是应该写成上面这种形式，还">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-08-18T13:22:10.856Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="怎样写python的if语句比较高效？">
+<meta name="twitter:description" content="问题来源跳转，尤其是条件跳转有可能会打断CPU指令的流水线执行，所以在性能要求比较高的代码中，我都是系统尽量不要出现if，那实在要出现怎么办了，比如有如下代码：1234for component in components:    # 判断是否要处理component数据    if component.enabled:        # do sth... 这种情况下我是应该写成上面这种形式，还">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="PT's Blog" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://wadarochi.github.io/2017/10/15/effective-python-if/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>怎样写python的if语句比较高效？ | PT's Blog</title>
+  
+
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?ffef4fbaef7cdb68f17096cb5f507f85";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">PT's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <h1 class="site-subtitle" itemprop="description">嗷嗷嗷嗷嗷嗷嗷嗷</h1>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />Home</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+    <a href="/archives/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />Archives</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+    <a href="/about/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-user"></i> <br />About</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+    <a href="/tags/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />Tags</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+    <a href="/categories/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-th"></i> <br />Categories</a>
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />Search</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="Searching..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://wadarochi.github.io/2017/10/15/effective-python-if/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="pt">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/img/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="PT's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">怎样写python的if语句比较高效？
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2017-10-15 01:49:38" itemprop="dateCreated datePublished" datetime="2017-10-15T01:49:38+08:00">2017-10-15</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2018-08-18 21:22:10" itemprop="dateModified" datetime="2018-08-18T21:22:10+08:00">2018-08-18</time>
+              
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="问题来源"><a href="#问题来源" class="headerlink" title="问题来源"></a>问题来源</h1><p>跳转，尤其是条件跳转有可能会打断CPU指令的流水线执行，所以在性能要求比较高的代码中，我都是系统尽量不要出现if，那实在要出现怎么办了，比如有如下代码：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> component <span class="keyword">in</span> components:</span><br><span class="line">    <span class="comment"># 判断是否要处理component数据</span></span><br><span class="line">    <span class="keyword">if</span> component.enabled:</span><br><span class="line">        <span class="comment"># do sth...</span></span><br></pre></td></tr></table></figure></p>
+<p>这种情况下我是应该写成上面这种形式，还是应该写成下面的形式呢，哪种更高效？</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> component <span class="keyword">in</span> components:</span><br><span class="line">    <span class="comment"># 判断是否要处理component数据</span></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> component.enabled:</span><br><span class="line">        <span class="keyword">continue</span></span><br><span class="line">    <span class="comment"># do sth...</span></span><br></pre></td></tr></table></figure>
+<p>别问我为什么性能要求比较高的时候还要用python，我也不想……那么假设我们知道条件为<code>True</code>和<code>False</code>的概率，哪一种比较高效？</p>
+<a id="more"></a>
+<h1 id="Python解释器中if语句的实现细节"><a href="#Python解释器中if语句的实现细节" class="headerlink" title="Python解释器中if语句的实现细节"></a>Python解释器中if语句的实现细节</h1><h2 id="字节码"><a href="#字节码" class="headerlink" title="字节码"></a>字节码</h2><p>上述的第一种编码方式更容易生成箭头型的代码，直观的解释就是下面这种：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> a <span class="keyword">in</span> balabala:</span><br><span class="line">    <span class="keyword">if</span> a.b:</span><br><span class="line">        <span class="keyword">if</span> a.c:</span><br><span class="line">            <span class="keyword">if</span> a.d:</span><br><span class="line">                <span class="comment"># do sth...</span></span><br></pre></td></tr></table></figure></p>
+<p>所以我们经常使用<code>Guard Clauses</code>的方式去规避这样的箭头型代码，看起来会比较漂亮一些，就是下面这种：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> a <span class="keyword">in</span> balabala:</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> a.b:</span><br><span class="line">        <span class="keyword">continue</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> a.c:</span><br><span class="line">        <span class="keyword">continue</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> a.d:</span><br><span class="line">        <span class="keyword">continue</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># do sth...</span></span><br></pre></td></tr></table></figure>
+<p>回到之前的问题，哪种比较高效？首先我们给出示例代码：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">In [<span class="number">1</span>]: <span class="keyword">from</span> dis <span class="keyword">import</span> dis</span><br><span class="line"></span><br><span class="line">In [<span class="number">2</span>]: <span class="class"><span class="keyword">class</span> <span class="title">Component</span><span class="params">(object)</span>:</span></span><br><span class="line">   ...:     <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self)</span>:</span></span><br><span class="line">   ...:         self.enabled = <span class="keyword">True</span></span><br><span class="line">   ...:     <span class="function"><span class="keyword">def</span> <span class="title">update</span><span class="params">(self, delta_time_s)</span>:</span></span><br><span class="line">   ...:         <span class="keyword">pass</span></span><br><span class="line">   ...: </span><br><span class="line"></span><br><span class="line">In [<span class="number">3</span>]: components = [Component() <span class="keyword">for</span> idx <span class="keyword">in</span> xrange(<span class="number">10000</span>)]</span><br><span class="line"></span><br><span class="line">In [<span class="number">4</span>]: <span class="function"><span class="keyword">def</span> <span class="title">update_in_arrow_form</span><span class="params">(delta_time_s)</span>:</span></span><br><span class="line">   ...:     <span class="keyword">for</span> c <span class="keyword">in</span> components:</span><br><span class="line">   ...:         <span class="keyword">if</span> c.enabled:</span><br><span class="line">   ...:             c.update(delta_time_s)</span><br><span class="line">   ...: </span><br><span class="line"></span><br><span class="line">In [<span class="number">5</span>]: <span class="function"><span class="keyword">def</span> <span class="title">update_in_guard_clauses_form</span><span class="params">(delta_time_s)</span>:</span></span><br><span class="line">   ...:     <span class="keyword">for</span> c <span class="keyword">in</span> components:</span><br><span class="line">   ...:         <span class="keyword">if</span> <span class="keyword">not</span> c.enabled:</span><br><span class="line">   ...:             <span class="keyword">continue</span></span><br><span class="line">   ...:         c.update(delta_time_s)</span><br><span class="line">   ...:</span><br></pre></td></tr></table></figure>
+<p>在上边的代码中，我们模拟了一个遍历Component容器并且调用每一个Component的update方法(这种Component的设计是很糟糕的，状态和行为还是需要分割开来比较好，参考ECS)，遍历过程中需要判定Component是否需要处理，这就引入了分支逻辑。</p>
+<p>在看看字节码之前，我先根据过往教科书上的知识做一个猜想：<strong>引发分支预测错误少、分支预测错误代价小的写法，性能更好</strong>。</p>
+<p>然后我们来看看箭头型代码的字节码：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">In [<span class="number">6</span>]: dis(update_in_arrow_form)</span><br><span class="line">  <span class="number">2</span>           <span class="number">0</span> SETUP_LOOP              <span class="number">39</span> (to <span class="number">42</span>)</span><br><span class="line">              <span class="number">3</span> LOAD_GLOBAL              <span class="number">0</span> (components)</span><br><span class="line">              <span class="number">6</span> GET_ITER</span><br><span class="line">        &gt;&gt;    <span class="number">7</span> FOR_ITER                <span class="number">31</span> (to <span class="number">41</span>)</span><br><span class="line">             <span class="number">10</span> STORE_FAST               <span class="number">1</span> (c)</span><br><span class="line"></span><br><span class="line">  <span class="number">3</span>          <span class="number">13</span> LOAD_FAST                <span class="number">1</span> (c)</span><br><span class="line">             <span class="number">16</span> LOAD_ATTR                <span class="number">1</span> (enabled)</span><br><span class="line">             <span class="number">19</span> POP_JUMP_IF_FALSE       <span class="number">38</span></span><br><span class="line"></span><br><span class="line">  <span class="number">4</span>          <span class="number">22</span> LOAD_FAST                <span class="number">1</span> (c)</span><br><span class="line">             <span class="number">25</span> LOOKUP_METHOD            <span class="number">2</span> (update)</span><br><span class="line">             <span class="number">28</span> LOAD_FAST                <span class="number">0</span> (delta_time_s)</span><br><span class="line">             <span class="number">31</span> CALL_METHOD              <span class="number">1</span></span><br><span class="line">             <span class="number">34</span> POP_TOP</span><br><span class="line">             <span class="number">35</span> JUMP_ABSOLUTE            <span class="number">7</span></span><br><span class="line">        &gt;&gt;   <span class="number">38</span> JUMP_ABSOLUTE            <span class="number">7</span></span><br><span class="line">        &gt;&gt;   <span class="number">41</span> POP_BLOCK</span><br><span class="line">        &gt;&gt;   <span class="number">42</span> LOAD_CONST               <span class="number">0</span> (<span class="keyword">None</span>)</span><br><span class="line">             <span class="number">45</span> RETURN_VALUE</span><br></pre></td></tr></table></figure>
+<p>可以看出只有在判断<code>c.enabled</code>为<code>False</code>的情况下，才需要跳转，假如<code>c.enabled</code>大概率为<code>True</code>的时候，类似逻辑写成箭头型符合之前的猜想，但是如果<code>c.enabled</code>大概率为<code>False</code>，就不符合了。</p>
+<p>那<code>Guard Clauses</code>这种写法呢？也看看字节码：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">In [<span class="number">7</span>]: dis(update_in_guard_clauses_form)</span><br><span class="line">  <span class="number">2</span>           <span class="number">0</span> SETUP_LOOP              <span class="number">42</span> (to <span class="number">45</span>)</span><br><span class="line">              <span class="number">3</span> LOAD_GLOBAL              <span class="number">0</span> (components)</span><br><span class="line">              <span class="number">6</span> GET_ITER</span><br><span class="line">        &gt;&gt;    <span class="number">7</span> FOR_ITER                <span class="number">34</span> (to <span class="number">44</span>)</span><br><span class="line">             <span class="number">10</span> STORE_FAST               <span class="number">1</span> (c)</span><br><span class="line"></span><br><span class="line">  <span class="number">3</span>          <span class="number">13</span> LOAD_FAST                <span class="number">1</span> (c)</span><br><span class="line">             <span class="number">16</span> LOAD_ATTR                <span class="number">1</span> (enabled)</span><br><span class="line">             <span class="number">19</span> POP_JUMP_IF_TRUE        <span class="number">28</span></span><br><span class="line"></span><br><span class="line">  <span class="number">4</span>          <span class="number">22</span> JUMP_ABSOLUTE            <span class="number">7</span></span><br><span class="line">             <span class="number">25</span> JUMP_FORWARD             <span class="number">0</span> (to <span class="number">28</span>)</span><br><span class="line"></span><br><span class="line">  <span class="number">5</span>     &gt;&gt;   <span class="number">28</span> LOAD_FAST                <span class="number">1</span> (c)</span><br><span class="line">             <span class="number">31</span> LOOKUP_METHOD            <span class="number">2</span> (update)</span><br><span class="line">             <span class="number">34</span> LOAD_FAST                <span class="number">0</span> (delta_time_s)</span><br><span class="line">             <span class="number">37</span> CALL_METHOD              <span class="number">1</span></span><br><span class="line">             <span class="number">40</span> POP_TOP</span><br><span class="line">             <span class="number">41</span> JUMP_ABSOLUTE            <span class="number">7</span></span><br><span class="line">        &gt;&gt;   <span class="number">44</span> POP_BLOCK</span><br><span class="line">        &gt;&gt;   <span class="number">45</span> LOAD_CONST               <span class="number">0</span> (<span class="keyword">None</span>)</span><br><span class="line">             <span class="number">48</span> RETURN_VALUE</span><br></pre></td></tr></table></figure>
+<p>只要<code>c.enabled</code>为<code>True</code>，就会引发跳转，那么就和之前的箭头型代码反过来了：假如<code>c.enabled</code>大概率为<code>True</code>的时候，类似逻辑写成<code>Guard Clauses</code>型是不符合猜想的，但是如果<code>c.enabled</code>大概率为<code>False</code>，就符合猜想。</p>
+<p>虽然上面的例子没有加上<code>else</code>分支，但是如果你自己加上<code>else</code>分支，也是类似的字节码。</p>
+<h2 id="CPython的底层实现"><a href="#CPython的底层实现" class="headerlink" title="CPython的底层实现"></a>CPython的底层实现</h2><p>到目前为止，我们看到的都是字节码层面的内容，<code>CPython</code>底层<code>POP_JUMP_IF_TRUE</code>和<code>POP_JUMP_IF_FALSE</code>是如何处理跳转的呢？答案在<code>ceval.c</code>中，这里我只贴<code>POP_JUMP_IF_FALSE</code>相关的代码，<code>POP_JUMP_IF_TRUE</code>其实是类似的：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">PREDICTED(POP_JUMP_IF_FALSE);</span><br><span class="line">TARGET(POP_JUMP_IF_FALSE) &#123;</span><br><span class="line">    PyObject *cond = POP();</span><br><span class="line">    <span class="keyword">int</span> err;</span><br><span class="line">    <span class="keyword">if</span> (cond == Py_True) &#123;</span><br><span class="line">        Py_DECREF(cond);</span><br><span class="line">        FAST_DISPATCH();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (cond == Py_False) &#123;</span><br><span class="line">        Py_DECREF(cond);</span><br><span class="line">        JUMPTO(oparg);</span><br><span class="line">        FAST_DISPATCH();</span><br><span class="line">    &#125;</span><br><span class="line">    err = PyObject_IsTrue(cond);</span><br><span class="line">    Py_DECREF(cond);</span><br><span class="line">    <span class="keyword">if</span> (err &gt; <span class="number">0</span>)</span><br><span class="line">        ;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (err == <span class="number">0</span>)</span><br><span class="line">        JUMPTO(oparg);</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        <span class="keyword">goto</span> error;</span><br><span class="line">    DISPATCH();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>果然，字面意思就是如果判断为<code>False</code>我才跳转，<code>JUMPTO</code>只有在<code>cond == Py_False</code>的时候才会被调用到。</p>
+<p>那这么说，是不是意味着：<strong>最可能运行到的代码应该放到if分支中，箭头型代码比Guard Clauses重构过的代码性能要好？</strong></p>
+<h2 id="Benchmark"><a href="#Benchmark" class="headerlink" title="Benchmark"></a>Benchmark</h2><p>如果没有Benchmark，一切都只是猜想，因为一方面CPU的流水线分支预测非常复杂，还有乱序执行等等高级技术在里面；另一方面除了<code>JUMPTO</code>，上面解释执行Python代码的C代码中还有大量的<code>if-else</code>分支，也就是说只要出现这条字节码，对CPU就会多出非常多的分支。所以单从字节码层面的跳转分析可能是不准的，只好测一测了。</p>
+<p>这里我构造两组<code>components</code>，第一组只有每十个中只有一个<code>Component</code>的<code>enabled</code>为<code>True</code>，另一组反过来，然后看看运行时间的对比：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line">In [<span class="number">8</span>]: <span class="function"><span class="keyword">def</span> <span class="title">test_almost_true</span><span class="params">(f)</span>:</span></span><br><span class="line">   ...:     <span class="keyword">for</span> idx, component <span class="keyword">in</span> enumerate(components):</span><br><span class="line">   ...:         <span class="keyword">if</span> idx % <span class="number">10</span> == <span class="number">0</span>:</span><br><span class="line">   ...:             component.enabled = <span class="keyword">False</span></span><br><span class="line">   ...:         <span class="keyword">else</span>:</span><br><span class="line">   ...:             component.enabled = <span class="keyword">True</span></span><br><span class="line">   ...:     <span class="keyword">return</span> timeit.repeat(<span class="keyword">lambda</span>: f(<span class="number">0</span>), number=<span class="number">10</span>)</span><br><span class="line">   ...:</span><br><span class="line"></span><br><span class="line">In [<span class="number">9</span>]: <span class="function"><span class="keyword">def</span> <span class="title">test_almost_false</span><span class="params">(f)</span>:</span></span><br><span class="line">   ...:     <span class="keyword">for</span> idx, component <span class="keyword">in</span> enumerate(components):</span><br><span class="line">   ...:         <span class="keyword">if</span> idx % <span class="number">10</span> == <span class="number">0</span>:</span><br><span class="line">   ...:             component.enabled = <span class="keyword">True</span> </span><br><span class="line">   ...:         <span class="keyword">else</span>:</span><br><span class="line">   ...:             component.enabled = <span class="keyword">False</span></span><br><span class="line">   ...:     <span class="keyword">return</span> timeit.repeat(<span class="keyword">lambda</span>: f(<span class="number">0</span>), number=<span class="number">10</span>)</span><br><span class="line">   ...:</span><br><span class="line"></span><br><span class="line">In [<span class="number">10</span>]: a1 = test_almost_true(update_in_arrow_form)</span><br><span class="line"></span><br><span class="line">In [<span class="number">11</span>]: b1 = test_almost_true(update_in_guard_clauses_form)</span><br><span class="line"></span><br><span class="line">In [<span class="number">12</span>]: <span class="keyword">for</span> m, n <span class="keyword">in</span> zip(a1, b1):</span><br><span class="line">    ...:     <span class="keyword">print</span> (m - n) / n * <span class="number">100.0</span></span><br><span class="line">    ...:</span><br><span class="line"><span class="number">23.0675013609</span></span><br><span class="line"><span class="number">-23.0445608311</span></span><br><span class="line"><span class="number">-16.3107397091</span></span><br><span class="line"><span class="number">30.4611497157</span></span><br><span class="line"><span class="number">-2.43304228392</span></span><br><span class="line"><span class="number">-4.31911240259</span></span><br><span class="line"><span class="number">79.3438445612</span></span><br><span class="line"></span><br><span class="line">In [<span class="number">13</span>]: <span class="function"><span class="keyword">def</span> <span class="title">no_branch</span><span class="params">(delta_time_s)</span>:</span></span><br><span class="line">    ...:     <span class="keyword">for</span> c <span class="keyword">in</span> components:</span><br><span class="line">    ...:         c.update(delta_time_s)</span><br><span class="line">    ...:</span><br><span class="line"></span><br><span class="line">In [<span class="number">14</span>]: g = test_almost_true(no_branch)</span><br><span class="line"></span><br><span class="line">In [<span class="number">15</span>]: <span class="keyword">for</span> m, n <span class="keyword">in</span> zip(a1, g):</span><br><span class="line">    ...:     <span class="keyword">print</span> (m - n) / n * <span class="number">100</span></span><br><span class="line">    ...: </span><br><span class="line"><span class="number">204.991568297</span></span><br><span class="line"><span class="number">151.134771645</span></span><br><span class="line"><span class="number">209.973251815</span></span><br><span class="line"><span class="number">313.04</span></span><br><span class="line"><span class="number">303.284671533</span></span><br><span class="line"><span class="number">174.186222559</span></span><br><span class="line"><span class="number">357.392363932</span></span><br></pre></td></tr></table></figure>
+<p>&amp;*%^)$#，看起来在字节码和c代码层面根据跳转与否做出的猜想，与测试结果不一致…</p>
+<p>经过了非常多的测试，看起来在Intel i5平台上（移动版，性能很差，从上面的数据就可以看出来了），有这样的结论：</p>
+<ol>
+<li>即使在有先验概率支持的情况下，箭头型代码并不比<code>Guard Clauses</code>重构过的代码快，两者的测试看不出显著差别，那么我们还是继续使用<code>Guard Clauses</code>形式的代码好了；</li>
+<li>相对于没有分支的代码，有分支的代码要慢（相对百分之两三百，不过绝对值非常小），尽管没分支的测试代码多调用了11%的函数(这个和经验倒是吻合的)。</li>
+</ol>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>Post author:  </strong>pt</li>
+  <li class="post-copyright-link">
+    <strong>Post link: </strong>
+    <a href="https://wadarochi.github.io/2017/10/15/effective-python-if/" title="怎样写python的if语句比较高效？">https://wadarochi.github.io/2017/10/15/effective-python-if/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>Copyright Notice:  </strong>All articles in this blog are licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 4.0</a> unless stating additionally.</li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/python/" rel="tag"># python</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/09/27/python-faster-way/" rel="next" title="Python: Faster Way">
+                <i class="fa fa-chevron-left"></i> Python: Faster Way
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/10/15/fcitx-on-gnome-shell/" rel="prev" title="GNOME Shell 3.24中的GTK程序也可以用fcitx啦">
+                GNOME Shell 3.24中的GTK程序也可以用fcitx啦 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="lv-container" data-id="city" data-uid="MTAyMC8zMDYzMi83MTg3"></div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/img/avatar.png"
+                alt="pt" />
+            
+              <p class="site-author-name" itemprop="name">pt</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">31</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">3</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">24</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/wadarochi" target="_blank" title="GitHub" rel="external nofollow"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:wadarochi@gmail.com" target="_blank" title="E-Mail" rel="external nofollow"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://plus.google.com/115181423519169380118" target="_blank" title="Google" rel="external nofollow"><i class="fa fa-fw fa-google"></i>Google</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+            <div class="cc-license motion-element" itemprop="license">
+              <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" target="_blank" rel="external nofollow">
+                <img src="/images/cc-by-nc-sa.svg" alt="Creative Commons" />
+              </a>
+            </div>
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#问题来源"><span class="nav-number">1.</span> <span class="nav-text">问题来源</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Python解释器中if语句的实现细节"><span class="nav-number">2.</span> <span class="nav-text">Python解释器中if语句的实现细节</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#字节码"><span class="nav-number">2.1.</span> <span class="nav-text">字节码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CPython的底层实现"><span class="nav-number">2.2.</span> <span class="nav-text">CPython的底层实现</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Benchmark"><span class="nav-number">2.3.</span> <span class="nav-text">Benchmark</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2010 – <span itemprop="copyrightYear">2018</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">pt</span>
+
+  
+
+  
+</div>
+
+
+  
+
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" rel="external nofollow" href="https://hexo.io">Hexo</a> v3.7.1</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a class="theme-link" target="_blank" rel="external nofollow" href="https://theme-next.org">NexT.Gemini</a> v6.4.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.4.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.4.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=6.4.0"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=6.4.0"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.4.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.4.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.4.0"></script>
+
+
+
+  
+
+
+
+  
+    <script type="text/javascript">
+      (function(d, s) {
+        var j, e = d.getElementsByTagName(s)[0];
+        if (typeof LivereTower === 'function') { return; }
+        j = d.createElement(s);
+        j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+        j.async = true;
+        e.parentNode.insertBefore(j, e);
+      })(document, 'script');
+    </script>
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap')
+      $(e).after($wrap)
+      $wrap.append($('<button>').addClass('copy-btn').append('Copy').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text()
+        }).toArray().join('\n')
+        var ta = document.createElement('textarea')
+        document.body.appendChild(ta)
+        ta.style.position = 'absolute'
+        ta.style.top = '0px'
+        ta.style.left = '0px'
+        ta.value = code
+        ta.select()
+        ta.focus()
+        var result = document.execCommand('copy')
+        document.body.removeChild(ta)
+        
+          if(result)$(this).text('Copied')
+          else $(this).text('Copy failed')
+        
+        $(this).blur()
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn')
+        setTimeout(function () {
+          $b.text('Copy')
+        }, 300)
+      }).append(e)
+    })
+  </script>
+
+
+</body>
+</html>
