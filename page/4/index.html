@@ -348,6 +348,165 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://wadarochi.github.io/2010/05/10/推荐一个简单方便的条形码识别库-ZBar/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="pt">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/img/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="PT's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2010/05/10/推荐一个简单方便的条形码识别库-ZBar/" itemprop="url">
+                  推荐一个简单方便的条形码识别库--ZBar
+                </a>
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2010-05-10 01:46:00" itemprop="dateCreated datePublished" datetime="2010-05-10T01:46:00+08:00">2010-05-10</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2018-08-18 21:22:10" itemprop="dateModified" datetime="2018-08-18T21:22:10+08:00">2018-08-18</time>
+              
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>最近莫名奇妙的突然突入到各式各样的领域中，比如生成条形码，识别条形码，编造、解析GPS帧格式，经纬度与直角坐标变换，小波变换求特征值，心电图数据查询…</p>
+<p>然后觉得应该把这些东西记下来</p>
+<p>What is ZBar?<br>ZBar is a bar code scanning and decoding library.</p>
+<p>ZBar支持识别二维条形码，纯C实现(可选C++封装)，提供了C/C++、python、perl语言的接口，可以用在iPhone上…</p>
+<p>在官方wiki页面(<a href="http://sourceforge.net/apps/mediawiki/zbar/index.php?title=HOWTO:_Scan_images_using_the_API)有详细的用法" target="_blank" rel="noopener">http://sourceforge.net/apps/mediawiki/zbar/index.php?title=HOWTO:_Scan_images_using_the_API)有详细的用法</a></p>
+<p>话说这个库什么都好，就是wiki里面提供的例子全是用的Magick++，用Windows平台+VC6的童鞋可能要郁闷了。</p>
+<p>其实不用Magick++也是可以的，ZBar的文档说传给parser处理的图片的格式最好是Y800(<a href="http://fourcc.org/yuv.php#Y800)的，使用OpenCV的函数cvCvtColor(cimg,gimg,CV_BGR2GRAY)也是可以搞定的，不相信的童鞋可以去看看这个函数的文档，对比一下CV_BGR2GRAY生成的图像是不是就是Y800格式" target="_blank" rel="noopener">http://fourcc.org/yuv.php#Y800)的，使用OpenCV的函数cvCvtColor(cimg,gimg,CV_BGR2GRAY)也是可以搞定的，不相信的童鞋可以去看看这个函数的文档，对比一下CV_BGR2GRAY生成的图像是不是就是Y800格式</a></p>
+<p>如果是在Linux下面，还是用Magick++比较好</p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://wadarochi.github.io/2010/05/03/生活在看不到星星的南京/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -855,7 +1014,7 @@ sudo update-alternatives --config gcc
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">33</span>
+                    <span class="site-state-item-count">34</span>
                     <span class="site-state-item-name">posts</span>
                   </a>
                 </div>
