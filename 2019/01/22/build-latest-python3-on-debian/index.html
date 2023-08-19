@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"wadarochi.github.io","root":"/","images":"/images","scheme":"Mist","darkmode":false,"version":"8.18.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":true,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"gitalk","storage":true,"lazyload":false,"nav":{"gitalk":{"order":-1}},"activeClass":"gitalk"},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="前言本文涉及的所有vim插件，在这里均有列出：pt.vim。 问题起源猪厂内网，本人某一台开发服务器上目前还运行着古董Debian：Jessie，官方repo中各种legacy软件让人崩溃。所以我在home路径下放了个.local，把各种常用软件都编译了一份最新版扔在这里，比如：  vim 8.1.789——为了体验8.1引入的terminal功能 tmux 2.8——因为vim material">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Debian 8.9(Jessie)编译Python 3.7.2">
+<meta property="og:url" content="https://wadarochi.github.io/2019/01/22/build-latest-python3-on-debian/index.html">
+<meta property="og:site_name" content="PT&#39;s Blog">
+<meta property="og:description" content="前言本文涉及的所有vim插件，在这里均有列出：pt.vim。 问题起源猪厂内网，本人某一台开发服务器上目前还运行着古董Debian：Jessie，官方repo中各种legacy软件让人崩溃。所以我在home路径下放了个.local，把各种常用软件都编译了一份最新版扔在这里，比如：  vim 8.1.789——为了体验8.1引入的terminal功能 tmux 2.8——因为vim material">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2019-01-22T14:29:26.000Z">
+<meta property="article:modified_time" content="2023-08-19T14:51:15.559Z">
+<meta property="article:author" content="pt">
+<meta property="article:tag" content="debian">
+<meta property="article:tag" content="vim">
+<meta property="article:tag" content="python3">
+<meta property="article:tag" content="gcc">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://wadarochi.github.io/2019/01/22/build-latest-python3-on-debian/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://wadarochi.github.io/2019/01/22/build-latest-python3-on-debian/","path":"2019/01/22/build-latest-python3-on-debian/","title":"Debian 8.9(Jessie)编译Python 3.7.2"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Debian 8.9(Jessie)编译Python 3.7.2 | PT's Blog</title>
+  
+
+  <script src="/js/third-party/analytics/baidu-analytics.js"></script>
+  <script async src="https://hm.baidu.com/hm.js?ffef4fbaef7cdb68f17096cb5f507f85"></script>
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">PT's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">嗷嗷嗷嗷嗷嗷嗷嗷</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="Search" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="home fa-fw"></i>Home</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="user fa-fw"></i>About</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="tags fa-fw"></i>Tags</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="th fa-fw"></i>Categories</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="archive fa-fw"></i>Archives</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%97%AE%E9%A2%98%E8%B5%B7%E6%BA%90"><span class="nav-number">2.</span> <span class="nav-text">问题起源</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BC%96%E8%AF%91Python-3-7-2"><span class="nav-number">3.</span> <span class="nav-text">编译Python 3.7.2</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%87%86%E5%A4%87%E5%B7%A5%E4%BD%9C%E2%80%94%E2%80%94%E7%BC%96%E8%AF%91gcc-8-2"><span class="nav-number">3.1.</span> <span class="nav-text">准备工作——编译gcc 8.2</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BC%96%E8%AF%91Python"><span class="nav-number">3.2.</span> <span class="nav-text">编译Python</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%87%8D%E6%96%B0%E7%BC%96%E8%AF%91vim"><span class="nav-number">3.3.</span> <span class="nav-text">重新编译vim</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="pt"
+      src="/img/avatar.png">
+  <p class="site-author-name" itemprop="name">pt</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">35</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">30</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wadarochi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;wadarochi" rel="noopener me" target="_blank"><i class="github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:wadarochi@gmail.com" title="E-Mail → mailto:wadarochi@gmail.com" rel="noopener me" target="_blank"><i class="envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://wadarochi.github.io/2019/01/22/build-latest-python3-on-debian/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/img/avatar.png">
+      <meta itemprop="name" content="pt">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="PT's Blog">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Debian 8.9(Jessie)编译Python 3.7.2 | PT's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Debian 8.9(Jessie)编译Python 3.7.2
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2019-01-22 22:29:26" itemprop="dateCreated datePublished" datetime="2019-01-22T22:29:26+08:00">2019-01-22</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2023-08-19 22:51:15" itemprop="dateModified" datetime="2023-08-19T22:51:15+08:00">2023-08-19</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>本文涉及的所有vim插件，在这里均有列出：<a target="_blank" rel="noopener" href="https://github.com/wadarochi/pt.vim">pt.vim</a>。</p>
+<h1 id="问题起源"><a href="#问题起源" class="headerlink" title="问题起源"></a>问题起源</h1><p>猪厂内网，本人某一台开发服务器上目前还运行着古董Debian：Jessie，官方repo中各种legacy软件让人崩溃。所以我在home路径下放了个.local，把各种常用软件都编译了一份最新版扔在这里，比如：</p>
+<ul>
+<li>vim 8.1.789——为了体验8.1引入的terminal功能</li>
+<li>tmux 2.8——因为vim material主题在老版本的tmux中会颜色错乱</li>
+<li>rg——Debian Jessie repo中没有这货</li>
+<li>mc——Debian Jessie repo中这货版本太老了</li>
+<li>python 3.7.2——好用的vim插件denite.nvim要求Python 3.6以上，而官方repo中只有3.4</li>
+<li>gcc 8.2——编译Python 3.7需要新版本的gcc，索性build一个当下最新版本</li>
+</ul>
+<p>某天早上，我在开发服务器上的vim中例（手）行（贱）运行更新了所有vim插件：</p>
+<figure class="highlight vim"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">:<span class="keyword">call</span> dein#update()</span><br></pre></td></tr></table></figure>
+
+<p>然后，denite.nvim就不能用了：当我例行<code>Ctrl-P</code>，期望打开当前路径下某一文件时爆了一个Python trace。一个Python 3.6才引入的新方法报错了——找不到。打开denite.nvim的git log一看，果然作者有了新想法（我也喜欢追新，比如<code>--std=c++latest</code>）：</p>
+<figure class="highlight txt"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">* [2018-10-21] [9ba61c7] | Python 3.5+ is required &#123;&#123;Shougo Matsushita&#125;&#125;</span><br></pre></td></tr></table></figure>
+
+<p>因为这个插件很好用，所以只能升级开发机上的Python了。上文也说了，repo中只有3.4，搜索了各种backport，都没有为Jessie提供3.5以上的Python3，遂动手从源码编译。</p>
+<span id="more"></span>
+
+<h1 id="编译Python-3-7-2"><a href="#编译Python-3-7-2" class="headerlink" title="编译Python 3.7.2"></a>编译Python 3.7.2</h1><h2 id="准备工作——编译gcc-8-2"><a href="#准备工作——编译gcc-8-2" class="headerlink" title="准备工作——编译gcc 8.2"></a>准备工作——编译gcc 8.2</h2><p>Debian Jessise repo中的gcc 4.9.2无法胜任编译Python 3.7.2的重任，所以需要先从源码中build一份gcc，反正都已经从源码build了，干脆来个最新的，本文写作时，GNU FTP上最新的gcc为8.2.0，就是它了。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"># prepare dev libs</span><br><span class="line">sudo apt install libgcc-4.9-dev</span><br><span class="line"></span><br><span class="line"># prepare build directory</span><br><span class="line">mkdir gcc</span><br><span class="line">cd gcc</span><br><span class="line">mkdir gcc-build</span><br><span class="line"></span><br><span class="line"># download</span><br><span class="line">wget https://ftp.gnu.org/gnu/gcc/gcc-8.2.0/gcc-8.2.0.tar.xz</span><br><span class="line"></span><br><span class="line"># extract gcc source code</span><br><span class="line">tar xz gcc-8.2.0.tar.xz</span><br><span class="line">cd gcc-8.2.0</span><br><span class="line"></span><br><span class="line"># prepare dependencies</span><br><span class="line">./contrib/download_prerequisite</span><br><span class="line"></span><br><span class="line"># configure</span><br><span class="line">cd ../gcc-build</span><br><span class="line">../gcc-8.2.0/configure --prefix=/home/xxx/.local --enable-shared --disable-multilib --enable-threads=posix --enable-__cxa_atexit --enable-clocale=gnu --enable-languages=c,c++,fortran,go,objc,obj-c++</span><br><span class="line"></span><br><span class="line"># build</span><br><span class="line">make -j4</span><br><span class="line"></span><br><span class="line"># install into my home directory</span><br><span class="line">make install</span><br></pre></td></tr></table></figure>
+
+<p>因为服务器是64位系统，所以并不需要编译32位版本的gcc，于是在build gcc的时候将multilib这个特性给禁用了。编译gcc花了我接近两个小时……在继续往下之前，请确保<code>/home/xxx/.local/bin</code>已经在你的<code>PATH</code>当中。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt; g++ --version</span><br><span class="line">g++ (GCC) 8.2.0</span><br><span class="line">Copyright (C) 2018 Free Software Foundation, Inc.</span><br><span class="line">This is free software; see the source for copying conditions.  There is NO</span><br><span class="line">warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.</span><br></pre></td></tr></table></figure>
+
+<h2 id="编译Python"><a href="#编译Python" class="headerlink" title="编译Python"></a>编译Python</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"># prepare build directory</span><br><span class="line">mkdir python</span><br><span class="line">cd python</span><br><span class="line">mkdir python-build</span><br><span class="line"></span><br><span class="line"># download</span><br><span class="line">wget https://www.python.org/ftp/python/3.7.2/Python-3.7.2.tar.xz</span><br><span class="line"></span><br><span class="line"># extract</span><br><span class="line">tar -xf Python-3.7.2.tar.xz</span><br><span class="line"></span><br><span class="line"># configure</span><br><span class="line">cd python-build</span><br><span class="line">../Python-3.7.2/configure --enable-optimizations --prefix=/home/xxx/.local</span><br><span class="line"></span><br><span class="line"># build</span><br><span class="line">make -j4</span><br><span class="line"></span><br><span class="line"># install</span><br><span class="line">make install</span><br></pre></td></tr></table></figure>
+
+<p>测试一下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">python3 -c &quot;import sys; print(sys.version)&quot;</span><br><span class="line">3.7.2 (default, Jan 22 2019, 17:11:23)</span><br><span class="line">[GCC 8.2.0]</span><br></pre></td></tr></table></figure>
+
+<p>Cool!</p>
+<h2 id="重新编译vim"><a href="#重新编译vim" class="headerlink" title="重新编译vim"></a>重新编译vim</h2><p>上面的步骤全部搞定之后，正常情况下，在vim里面运行Python插件的时候应该已经可以找到<code>PATH</code>中的Python 3.7.2了，但是如果和我一样，之前编译vim的时候指定了系统的Python 3.4，那么你就得重新编译vim。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"># clone source code of vim from github</span><br><span class="line">git clone https://github.com/vim/vim.git</span><br><span class="line"></span><br><span class="line"># configure</span><br><span class="line">export LDFLAGS=&quot;-rdynamic&quot;</span><br><span class="line">PYTHON=&quot;/home/xxx/.local/bin/python3.7&quot; ./configure --with-features=huge --enable-python3interp=yes --enable-fail-if-missing --enable-multibyte --enable-gui=no --enable-cscope --prefix=/home/xxx/.local/</span><br><span class="line"></span><br><span class="line"># build</span><br><span class="line">make -j4</span><br><span class="line"></span><br><span class="line"># install</span><br><span class="line">make install</span><br></pre></td></tr></table></figure>
+
+<p>请注意这里一定要<code>export LDFLAGS=&quot;-rdynamic&quot;</code>，原因见这里：<a target="_blank" rel="noopener" href="https://github.com/vim/vim/issues/3629#issuecomment-440845680">undefined symbol: PyByteArray_Type #3629</a>。</p>
+<p>大功告成之后，denite.nvim工作又一切正常了，开心！只是如果你一直在vim源码路径编译的话，修改configure之前记得清理一下configure的中间文件：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git clean -fd</span><br><span class="line">git clean -fX</span><br></pre></td></tr></table></figure>
+
+<p>btw：写这篇文章的时候正好来了两位外国主播友人，给他们介绍了一番Rules of Survival新东东，好像我英语也还行，哈哈哈。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>Post author:  </strong>pt
+  </li>
+  <li class="post-copyright-link">
+      <strong>Post link: </strong>
+      <a href="https://wadarochi.github.io/2019/01/22/build-latest-python3-on-debian/" title="Debian 8.9(Jessie)编译Python 3.7.2">https://wadarochi.github.io/2019/01/22/build-latest-python3-on-debian/</a>
+  </li>
+  <li class="post-copyright-license">
+      <strong>Copyright Notice:  </strong>All articles in this blog are licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> unless stating additionally.
+  </li>
+</ul>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/debian/" rel="tag"># debian</a>
+              <a href="/tags/vim/" rel="tag"># vim</a>
+              <a href="/tags/python3/" rel="tag"># python3</a>
+              <a href="/tags/gcc/" rel="tag"># gcc</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2018/10/22/ubuntu-upgrade-to-1810/" rel="prev" title="Ubuntu从18.04升级到18.10">
+                  <i class="fa fa-angle-left"></i> Ubuntu从18.04升级到18.10
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 2010 – 
+    <span itemprop="copyrightYear">2023</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">pt</span>
+  </div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/wadarochi" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+
+
+  
+
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"wadarochi","repo":"wadarochi.github.io","client_id":"df6ea13dd26a14abff3e","client_secret":"ed1e7515cba034f250e623b87ac0ae5690ac4d8c","admin_user":"wadarochi","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":null,"js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"a92d611c6f62b853e4da49711d2d0cf9"}</script>
+<script src="/js/third-party/comments/gitalk.js"></script>
+
+</body>
+</html>

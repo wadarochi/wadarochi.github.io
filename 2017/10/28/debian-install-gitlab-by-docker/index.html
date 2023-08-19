@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"wadarochi.github.io","root":"/","images":"/images","scheme":"Mist","darkmode":false,"version":"8.18.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":true,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"gitalk","storage":true,"lazyload":false,"nav":{"gitalk":{"order":-1}},"activeClass":"gitalk"},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="安装步骤安装最新版docker engine参考文章：How to upgrade Docker on Debian or Ubuntu using the official source 源里面的docker版本开发服务器上使用的版本是Debian jessie，已经是老版本了，不出意料，源里面的docker果然是老版本： 1234$ apt search dockerlxc-docker-1.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="最简单的用Docker在Debian上安装GitLab的方法">
+<meta property="og:url" content="https://wadarochi.github.io/2017/10/28/debian-install-gitlab-by-docker/index.html">
+<meta property="og:site_name" content="PT&#39;s Blog">
+<meta property="og:description" content="安装步骤安装最新版docker engine参考文章：How to upgrade Docker on Debian or Ubuntu using the official source 源里面的docker版本开发服务器上使用的版本是Debian jessie，已经是老版本了，不出意料，源里面的docker果然是老版本： 1234$ apt search dockerlxc-docker-1.">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2017-10-28T06:47:48.000Z">
+<meta property="article:modified_time" content="2023-08-19T08:55:27.614Z">
+<meta property="article:author" content="pt">
+<meta property="article:tag" content="Debian">
+<meta property="article:tag" content="Ubuntu">
+<meta property="article:tag" content="Docker">
+<meta property="article:tag" content="GitLab">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://wadarochi.github.io/2017/10/28/debian-install-gitlab-by-docker/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://wadarochi.github.io/2017/10/28/debian-install-gitlab-by-docker/","path":"2017/10/28/debian-install-gitlab-by-docker/","title":"最简单的用Docker在Debian上安装GitLab的方法"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>最简单的用Docker在Debian上安装GitLab的方法 | PT's Blog</title>
+  
+
+  <script src="/js/third-party/analytics/baidu-analytics.js"></script>
+  <script async src="https://hm.baidu.com/hm.js?ffef4fbaef7cdb68f17096cb5f507f85"></script>
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">PT's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">嗷嗷嗷嗷嗷嗷嗷嗷</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="Search" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="home fa-fw"></i>Home</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="user fa-fw"></i>About</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="tags fa-fw"></i>Tags</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="th fa-fw"></i>Categories</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="archive fa-fw"></i>Archives</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AE%89%E8%A3%85%E6%AD%A5%E9%AA%A4"><span class="nav-number">1.</span> <span class="nav-text">安装步骤</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85%E6%9C%80%E6%96%B0%E7%89%88docker-engine"><span class="nav-number">1.1.</span> <span class="nav-text">安装最新版docker engine</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%BA%90%E9%87%8C%E9%9D%A2%E7%9A%84docker%E7%89%88%E6%9C%AC"><span class="nav-number">1.1.1.</span> <span class="nav-text">源里面的docker版本</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%89%E8%A3%85Docker%E5%AE%98%E6%96%B9%E6%BA%90%E4%B8%AD%E7%9A%84docker"><span class="nav-number">1.1.2.</span> <span class="nav-text">安装Docker官方源中的docker</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%80%9A%E8%BF%87docker%E5%AE%89%E8%A3%85GitLab"><span class="nav-number">1.2.</span> <span class="nav-text">通过docker安装GitLab</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%8E%B7%E5%8F%96GitLab%E7%9A%84docker-image"><span class="nav-number">1.2.1.</span> <span class="nav-text">获取GitLab的docker image</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%A9GitLab%E8%B7%91%E8%B5%B7%E6%9D%A5"><span class="nav-number">1.2.2.</span> <span class="nav-text">让GitLab跑起来</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BF%AE%E6%94%B9%E8%AE%BE%E7%BD%AE%E3%80%81%E5%8D%87%E7%BA%A7"><span class="nav-number">1.3.</span> <span class="nav-text">修改设置、升级</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%A0%E6%83%B3%E6%8D%A2%E6%96%B0%E7%89%88%E6%9C%AC%E7%9A%84GitLab"><span class="nav-number">1.3.1.</span> <span class="nav-text">你想换新版本的GitLab</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%A0%E6%94%B9%E4%BA%86docker-compose-yml"><span class="nav-number">1.3.2.</span> <span class="nav-text">你改了docker-compose.yml</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%9C%80%E6%B1%82%E6%9D%A5%E6%BA%90"><span class="nav-number">2.</span> <span class="nav-text">需求来源</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#QA%E6%B5%8B%E8%AF%95%E9%97%AE%E9%A2%98"><span class="nav-number">2.1.</span> <span class="nav-text">QA测试问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B7%B2%E6%9C%89%E6%9C%BA%E5%88%B6%E7%9A%84%E5%85%BC%E5%AE%B9%E9%97%AE%E9%A2%98"><span class="nav-number">2.2.</span> <span class="nav-text">已有机制的兼容问题</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#code-review%E9%97%AE%E9%A2%98"><span class="nav-number">2.2.1.</span> <span class="nav-text">code review问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81%E5%90%8C%E6%AD%A5%E6%9C%BA%E5%88%B6"><span class="nav-number">2.2.2.</span> <span class="nav-text">代码同步机制</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#svn%E3%80%81git%E6%B7%B7%E7%94%A8%E7%9A%84%E5%BB%BA%E8%AE%AE"><span class="nav-number">2.3.</span> <span class="nav-text">svn、git混用的建议</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="pt"
+      src="/img/avatar.png">
+  <p class="site-author-name" itemprop="name">pt</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">35</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">30</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wadarochi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;wadarochi" rel="noopener me" target="_blank"><i class="github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:wadarochi@gmail.com" title="E-Mail → mailto:wadarochi@gmail.com" rel="noopener me" target="_blank"><i class="envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://wadarochi.github.io/2017/10/28/debian-install-gitlab-by-docker/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/img/avatar.png">
+      <meta itemprop="name" content="pt">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="PT's Blog">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="最简单的用Docker在Debian上安装GitLab的方法 | PT's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          最简单的用Docker在Debian上安装GitLab的方法
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2017-10-28 14:47:48" itemprop="dateCreated datePublished" datetime="2017-10-28T14:47:48+08:00">2017-10-28</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2023-08-19 16:55:27" itemprop="dateModified" datetime="2023-08-19T16:55:27+08:00">2023-08-19</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/linux/" itemprop="url" rel="index"><span itemprop="name">linux</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1 id="安装步骤"><a href="#安装步骤" class="headerlink" title="安装步骤"></a>安装步骤</h1><h2 id="安装最新版docker-engine"><a href="#安装最新版docker-engine" class="headerlink" title="安装最新版docker engine"></a>安装最新版docker engine</h2><p>参考文章：<a target="_blank" rel="noopener" href="http://ask.xmodulo.com/upgrade-docker-debian-ubuntu.html">How to upgrade Docker on Debian or Ubuntu using the official source</a></p>
+<h3 id="源里面的docker版本"><a href="#源里面的docker版本" class="headerlink" title="源里面的docker版本"></a>源里面的docker版本</h3><p>开发服务器上使用的版本是Debian jessie，已经是老版本了，不出意料，源里面的docker果然是老版本：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ apt search docker</span><br><span class="line"></span><br><span class="line">lxc-docker-1.6.0/未知,now 1.6.0 amd64</span><br><span class="line">  Linux container runtime</span><br></pre></td></tr></table></figure>
+
+<h3 id="安装Docker官方源中的docker"><a href="#安装Docker官方源中的docker" class="headerlink" title="安装Docker官方源中的docker"></a>安装Docker官方源中的docker</h3><p>显然太老了，那么就从docker官方源安装最新版吧，Debian指令如下：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 添加docker官方源repo key（对Debian和Ubuntu都一样）</span></span><br><span class="line">$ sudo apt-key adv --keyserver http://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D</span><br><span class="line"></span><br><span class="line"><span class="comment"># 添加docker官方源，For Debian (7.0 and higher)</span></span><br><span class="line">$ sudo sh -c <span class="string">&quot;echo &#x27;deb https://apt.dockerproject.org/repo debian-<span class="subst">$(lsb_release -sc)</span> main&#x27; | cat &gt; /etc/apt/sources.list.d/docker.list&quot;</span></span><br></pre></td></tr></table></figure>
+
+<span id="more"></span>
+
+<p>如果你之前不小心装了<code>lxc-docker-1.6.0</code>，把它卸载掉：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo apt remove lxc-docker-1.6.0</span><br></pre></td></tr></table></figure>
+
+<p>接下来，安装最新版本的docker：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ sudo apt-get update; sudo apt-get install docker-engine</span><br><span class="line"></span><br><span class="line">$ docker --version</span><br><span class="line">Docker version 17.05.0-ce, build 89658be</span><br></pre></td></tr></table></figure>
+
+<p>对于Ubuntu系统，也就是添加源的那一行指令有少许差异，把<code>debian-</code>换成<code>ubuntu-</code>就好了，具体可以参考前面列的那篇参考文章。</p>
+<h2 id="通过docker安装GitLab"><a href="#通过docker安装GitLab" class="headerlink" title="通过docker安装GitLab"></a>通过docker安装GitLab</h2><p>参考文章：<a target="_blank" rel="noopener" href="https://github.com/sameersbn/docker-gitlab#installation">docker-gitlab#installation</a></p>
+<h3 id="获取GitLab的docker-image"><a href="#获取GitLab的docker-image" class="headerlink" title="获取GitLab的docker image"></a>获取GitLab的docker image</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo docker pull sameersbn/gitlab:10.1.0</span><br></pre></td></tr></table></figure>
+
+<p>如果你想尝试最新版本的GitLab，也可以把<code>10.1.0</code>改成<code>latest</code>，须谨慎。</p>
+<h3 id="让GitLab跑起来"><a href="#让GitLab跑起来" class="headerlink" title="让GitLab跑起来"></a>让GitLab跑起来</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 用docker compose最简单，来，我们装一个docker compose</span></span><br><span class="line">$ sudo curl -L https://github.com/docker/compose/releases/download/1.10.0/docker-compose-`<span class="built_in">uname</span> -s`-`<span class="built_in">uname</span> -m` &gt; /usr/local/bin/docker-compose</span><br><span class="line"></span><br><span class="line"><span class="comment"># 下载GitLab所需的docker-compose.yml</span></span><br><span class="line">$ wget https://raw.githubusercontent.com/sameersbn/docker-gitlab/master/docker-compose.yml</span><br></pre></td></tr></table></figure>
+
+<p>在我们正式让GitLab跑起来之前，我们最好去设置一下，也就是编辑一下刚刚下载下来的docker-compose.yml，我做了如下修改：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">47c47</span><br><span class="line">&lt;     - TZ=Asia/Kolkata</span><br><span class="line">---</span><br><span class="line">&gt;     - TZ=Asia/Shanghai</span><br><span class="line">53c53</span><br><span class="line">&lt;     - GITLAB_HOST=localhost</span><br><span class="line">---</span><br><span class="line">&gt;     - GITLAB_HOST=xxx.xxx.xxx.xxx</span><br></pre></td></tr></table></figure>
+
+<p>最后，让GitLab跑起来：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo docker-compose up</span><br></pre></td></tr></table></figure>
+
+<p>这样你就可以通过浏览器在 <a target="_blank" rel="noopener" href="http://xxx.xxx.xxx.xxx:10080/">http://xxx.xxx.xxx.xxx:10080</a> 访问到你自己的GitLab了。</p>
+<p>一切正常之后，在当前终端<code>Ctrl-C</code>终止当前的GitLab的Docker，该用下面的指令来运行GitLab Daemon就好了：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ docker-compose up -d</span><br></pre></td></tr></table></figure>
+
+<p>是不是很简单，仅仅需要十条左右的无脑指令。而且之后只要你的Debian上的docker service启动，GitLab就会启动，完全无须自己去设置systemd。</p>
+<h2 id="修改设置、升级"><a href="#修改设置、升级" class="headerlink" title="修改设置、升级"></a>修改设置、升级</h2><h3 id="你想换新版本的GitLab"><a href="#你想换新版本的GitLab" class="headerlink" title="你想换新版本的GitLab"></a>你想换新版本的GitLab</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 先cd到你存放docker-compose.yml的路径，再运行下面的指令，我没看手册，不知道在其它地方运行会不会有效果</span></span><br><span class="line">$ sudo docker-compose pull</span><br><span class="line">$ sudo docker-compose up -d</span><br></pre></td></tr></table></figure>
+
+<h3 id="你改了docker-compose-yml"><a href="#你改了docker-compose-yml" class="headerlink" title="你改了docker-compose.yml"></a>你改了docker-compose.yml</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 先cd到你存放docker-compose.yml的路径，再运行下面的指令，我没看手册，不知道在其它地方运行会不会有效果</span></span><br><span class="line">$ sudo docker-compose up -d</span><br></pre></td></tr></table></figure>
+
+<h1 id="需求来源"><a href="#需求来源" class="headerlink" title="需求来源"></a>需求来源</h1><p>讲完了安装步骤，这里扯点其它的，鄙司内把svn作为项目代码的版本管理工具，我们希望每个功能的开发，都只有一个提交，这样做有两个方面的考虑：</p>
+<ol>
+<li>方便做code review。</li>
+<li>如果某个功能引入bug，可以快速、准确的回退这个功能相关的代码。</li>
+</ol>
+<p>有利有弊，假如只有一个提交：</p>
+<ol>
+<li>中间的那些修改只能本地保存了吗？万一硬盘坏了就gg了……</li>
+<li>这个功能需要多人协作怎么办？</li>
+</ol>
+<p>等等，为什么不用svn分支，开发完之后merge会trunk就好了？组内很多同学也有这样的疑问。但是在我看来，直接用svn分支有如下弊端：</p>
+<ol>
+<li>QA测试问题</li>
+<li>已有机制兼容问题</li>
+</ol>
+<h2 id="QA测试问题"><a href="#QA测试问题" class="headerlink" title="QA测试问题"></a>QA测试问题</h2><p>游戏公司向来特别喜欢压榨QA同学们，我也很同情他们，一个完整的开发流程如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">策划提需求 --&gt; 美术设计(optional) --&gt; 程序开发(optional，因为有时只需要策划拖编辑器或者改表就好了) --&gt; QA测试 --&gt; bug修复 --&gt; 功能放出</span><br></pre></td></tr></table></figure>
+
+<p>我们这还有周版本的概念，周版本就对应着每周的功能放出，这个时间点是定死的，真正的deadline，前面几个环节都可以拖，但是QA测试、bug修复一定不能拖。于是，为了避免QA同学通宵测试、程序员同学通宵改bug，QA就会在程序开发时介入测试，及早发现bug。</p>
+<p>在开发进行中介入测试，假如此时测试的代码距离最终版有很大的区别，那基本上在最终提交之后还得把这个功能点测试一次，所以我们要尽可能避免这种区别，那么导致这种区别的原因是什么呢？</p>
+<ol>
+<li>QA测试到的代码不是基于trunk HEAD的（这种情况比较多），那么如果你用了svn分支，当你需要同步到trunk HEAD，老老实实去sync merge吧，但是如果你没有用svn分支，<code>svn update</code>就好了（两者都可能需要解决冲突，但是后者明显会简单得多，对新手也不容易错）。</li>
+<li>程序员自己在测试完之后又去重构了（这种情况比较少，一般是因为code review）。</li>
+</ol>
+<p>所以我觉得从“让QA测试到最终代码方面”考虑，不用svn分支会更加好一些。</p>
+<h2 id="已有机制的兼容问题"><a href="#已有机制的兼容问题" class="headerlink" title="已有机制的兼容问题"></a>已有机制的兼容问题</h2><h3 id="code-review问题"><a href="#code-review问题" class="headerlink" title="code review问题"></a>code review问题</h3><p>用了svn分支，你的diff是通过比对两个svn分支来生成的；没有用svn分支，你的diff只需要<code>svn diff</code>就好了。后者的话，组内正在使用的review board工具就不需要修改。（最弱的理由……）</p>
+<h3 id="代码同步机制"><a href="#代码同步机制" class="headerlink" title="代码同步机制"></a>代码同步机制</h3><p>一直以来，我们在内服开发时，所有客户端会首先把代码、资源会同步到trunk HEAD，然后再同步特定功能的代码和资源——我们称为“功能分支”。功能分支本身的生成则依赖<code>svn diff</code>和git：首先用<code>svn diff</code>找到所有相对trunk HEAD的修改，然后把这些文件扔到git中去，会有一个工具根据git去生成功能分支的内容。</p>
+<p>从“已有机制的兼容”考虑，也是不用svn分支会更加好一些。</p>
+<p>然后我们既然已经引入了git，何不干脆就用git来做svn的补充就好了，为了防止硬盘挂掉导致本地git repo也消失的风险，同时也是多人协作的需要，我们需要一台git服务器，GitLab不错，于是有了前面的教程。</p>
+<h2 id="svn、git混用的建议"><a href="#svn、git混用的建议" class="headerlink" title="svn、git混用的建议"></a>svn、git混用的建议</h2><ul>
+<li>更新的时候先更新git再更新svn</li>
+<li>保险起见，每个功能开发都新建一个新的git repo</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>Post author:  </strong>pt
+  </li>
+  <li class="post-copyright-link">
+      <strong>Post link: </strong>
+      <a href="https://wadarochi.github.io/2017/10/28/debian-install-gitlab-by-docker/" title="最简单的用Docker在Debian上安装GitLab的方法">https://wadarochi.github.io/2017/10/28/debian-install-gitlab-by-docker/</a>
+  </li>
+  <li class="post-copyright-license">
+      <strong>Copyright Notice:  </strong>All articles in this blog are licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> unless stating additionally.
+  </li>
+</ul>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/Debian/" rel="tag"># Debian</a>
+              <a href="/tags/Ubuntu/" rel="tag"># Ubuntu</a>
+              <a href="/tags/Docker/" rel="tag"># Docker</a>
+              <a href="/tags/GitLab/" rel="tag"># GitLab</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2017/10/15/fcitx-on-gnome-shell/" rel="prev" title="GNOME Shell 3.24中的GTK程序也可以用fcitx啦">
+                  <i class="fa fa-angle-left"></i> GNOME Shell 3.24中的GTK程序也可以用fcitx啦
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2017/10/29/debian-install-jupyter-by-docker/" rel="next" title="最简单的用Docker在Debian上安装Jupyter的方法">
+                  最简单的用Docker在Debian上安装Jupyter的方法 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 2010 – 
+    <span itemprop="copyrightYear">2023</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">pt</span>
+  </div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/wadarochi" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+
+
+  
+
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"wadarochi","repo":"wadarochi.github.io","client_id":"df6ea13dd26a14abff3e","client_secret":"ed1e7515cba034f250e623b87ac0ae5690ac4d8c","admin_user":"wadarochi","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":null,"js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"be648763f4b3df9215be450cb0a1294b"}</script>
+<script src="/js/third-party/comments/gitalk.js"></script>
+
+</body>
+</html>

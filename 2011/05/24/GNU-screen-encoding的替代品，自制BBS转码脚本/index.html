@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"wadarochi.github.io","root":"/","images":"/images","scheme":"Mist","darkmode":false,"version":"8.18.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":true,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"gitalk","storage":true,"lazyload":false,"nav":{"gitalk":{"order":-1}},"activeClass":"gitalk"},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="之前一直想从screen迁移到tmux上来，因为后者相比较前者而言对脚本的支持更好，我可以轻松的将常用的几个窗口(window)打包成一个会话(session)，然后可以轻松的在一个脚本中将整个会话启动。但是一直下不定决心，因为screen有encoding功能，而tmux没有：  encoding enc [enc] Tell&amp;#160; screen&amp;#160; how&amp;#160; to&amp;#1">
+<meta property="og:type" content="article">
+<meta property="og:title" content="GNU screen encoding的替代品，自制BBS转码脚本">
+<meta property="og:url" content="https://wadarochi.github.io/2011/05/24/GNU-screen-encoding%E7%9A%84%E6%9B%BF%E4%BB%A3%E5%93%81%EF%BC%8C%E8%87%AA%E5%88%B6BBS%E8%BD%AC%E7%A0%81%E8%84%9A%E6%9C%AC/index.html">
+<meta property="og:site_name" content="PT&#39;s Blog">
+<meta property="og:description" content="之前一直想从screen迁移到tmux上来，因为后者相比较前者而言对脚本的支持更好，我可以轻松的将常用的几个窗口(window)打包成一个会话(session)，然后可以轻松的在一个脚本中将整个会话启动。但是一直下不定决心，因为screen有encoding功能，而tmux没有：  encoding enc [enc] Tell&amp;#160; screen&amp;#160; how&amp;#160; to&amp;#1">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://lh6.ggpht.com/_5Si8_iQ2HPI/TdvCVkAA4BI/AAAAAAAAAGM/yTOMfOe-8Sc/luit_thumb%5B42%5D.png?imgmax=800">
+<meta property="og:image" content="http://lh3.ggpht.com/_5Si8_iQ2HPI/TdvCYNgzo1I/AAAAAAAAAGU/xPWu2J34j5E/screen_thumb%5B1%5D.png?imgmax=800">
+<meta property="article:published_time" content="2011-05-24T14:36:00.000Z">
+<meta property="article:modified_time" content="2023-08-19T14:51:15.559Z">
+<meta property="article:author" content="pt">
+<meta property="article:tag" content="linux">
+<meta property="article:tag" content="BBS">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://lh6.ggpht.com/_5Si8_iQ2HPI/TdvCVkAA4BI/AAAAAAAAAGM/yTOMfOe-8Sc/luit_thumb%5B42%5D.png?imgmax=800">
+
+
+<link rel="canonical" href="https://wadarochi.github.io/2011/05/24/GNU-screen-encoding%E7%9A%84%E6%9B%BF%E4%BB%A3%E5%93%81%EF%BC%8C%E8%87%AA%E5%88%B6BBS%E8%BD%AC%E7%A0%81%E8%84%9A%E6%9C%AC/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://wadarochi.github.io/2011/05/24/GNU-screen-encoding%E7%9A%84%E6%9B%BF%E4%BB%A3%E5%93%81%EF%BC%8C%E8%87%AA%E5%88%B6BBS%E8%BD%AC%E7%A0%81%E8%84%9A%E6%9C%AC/","path":"2011/05/24/GNU-screen-encoding的替代品，自制BBS转码脚本/","title":"GNU screen encoding的替代品，自制BBS转码脚本"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>GNU screen encoding的替代品，自制BBS转码脚本 | PT's Blog</title>
+  
+
+  <script src="/js/third-party/analytics/baidu-analytics.js"></script>
+  <script async src="https://hm.baidu.com/hm.js?ffef4fbaef7cdb68f17096cb5f507f85"></script>
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">PT's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">嗷嗷嗷嗷嗷嗷嗷嗷</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="Search" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="home fa-fw"></i>Home</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="user fa-fw"></i>About</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="tags fa-fw"></i>Tags</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="th fa-fw"></i>Categories</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="archive fa-fw"></i>Archives</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-overview-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="pt"
+      src="/img/avatar.png">
+  <p class="site-author-name" itemprop="name">pt</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">35</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">30</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wadarochi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;wadarochi" rel="noopener me" target="_blank"><i class="github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:wadarochi@gmail.com" title="E-Mail → mailto:wadarochi@gmail.com" rel="noopener me" target="_blank"><i class="envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://wadarochi.github.io/2011/05/24/GNU-screen-encoding%E7%9A%84%E6%9B%BF%E4%BB%A3%E5%93%81%EF%BC%8C%E8%87%AA%E5%88%B6BBS%E8%BD%AC%E7%A0%81%E8%84%9A%E6%9C%AC/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/img/avatar.png">
+      <meta itemprop="name" content="pt">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="PT's Blog">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="GNU screen encoding的替代品，自制BBS转码脚本 | PT's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          GNU screen encoding的替代品，自制BBS转码脚本
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2011-05-24 22:36:00" itemprop="dateCreated datePublished" datetime="2011-05-24T22:36:00+08:00">2011-05-24</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2023-08-19 22:51:15" itemprop="dateModified" datetime="2023-08-19T22:51:15+08:00">2023-08-19</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>之前一直想从screen迁移到tmux上来，因为后者相比较前者而言对脚本的支持更好，我可以轻松的将常用的几个窗口(window)打包成一个会话(session)，然后可以轻松的在一个脚本中将整个会话启动。但是一直下不定决心，因为screen有encoding功能，而tmux没有：</p>
+<blockquote>
+<p>encoding enc [enc]</p>
+<p>Tell&#160; screen&#160; how&#160; to&#160; interpret&#160; the&#160; input&#x2F;output. The first argument sets the<br>encoding of the current window. Each window can emulate&#160; a&#160; different&#160; encoding.<br>The optional second parameter overwrites the encoding of the connected terminal.<br>It should never be needed as screen uses the locale setting to detect the encod‐<br>ing.&#160;&#160; There is also a way to select a terminal encoding depending on the termi‐<br>nal type by using the &quot;KJ&quot; termcap entry.</p>
+<p>Supported encodings are eucJP, SJIS, eucKR, eucCN, Big5,&#160; GBK,&#160; KOI8-R,&#160; CP1251,<br>UTF-8,&#160;&#160; ISO8859-2,&#160;&#160; ISO8859-3,&#160; ISO8859-4,&#160; ISO8859-5,&#160; ISO8859-6,&#160; ISO8859-7,<br>ISO8859-8, ISO8859-9, ISO8859-10, ISO8859-15, jis.</p>
+<p>See also &quot;defencoding&quot;, which changes the default setting of a new window.  </p>
+</blockquote>
+<p>简言之，encoding可以让你为不同的窗口(window)设置不同的字符集编码(charset)，并根据你的设定自动进行编码转换(当然，并不仅限于此，后面会细说)，对于我们这些使用Linux服务器在天朝教育网挂各大BBS站的同学而言，这个功能是十分重要的，因为大陆的BBS都是GBK编码的(据我所知是这样的)，但是自己的Linux服务器的系统locale一般都是UTF-8，以前曾经写过一些screen后台挂站的文章：</p>
+<ol>
+<li><a target="_blank" rel="noopener" href="http://bbs.seu.edu.cn/bbsanc.php?p=22-4-10-5">[FAQ]控制台下登陆BBS</a>2.  <a target="_blank" rel="noopener" href="http://bbs.seu.edu.cn/bbsanc.php?p=22-4-10-23">CLI环境之BBS攻略</a></li>
+</ol>
+<p>有同学可能要说了，如果要转码的话，用luit不就行了？比如&#96;&#96;luit –encoding GBK ssh –1 <a href="mailto:guest@bbs.seu.edu.cn&rsquo;&rsquo;">guest@bbs.seu.edu.cn’’</a>，单纯从转码的角度来说，luit确实是足够强劲了，这里先岔开来介绍一下luit:</p>
+<blockquote>
+<p>Luit&#160; is&#160; a&#160; filter that can be run between an arbitrary application and a UTF-8 terminal emulator.&#160; It will convert application output from the locale’s&#160; encoding&#160; into&#160; UTF-8, and convert terminal input from UTF-8 into the locale’s encoding.  </p>
+</blockquote>
+<p>但是，luit在putty和gnome-terminal下面处理ASCII艺术(ASCII art or ANSI art)的时候是让人失望的，比如如下两幅截图：</p>
+<p><a target="_blank" rel="noopener" href="http://lh6.ggpht.com/_5Si8_iQ2HPI/TdvCU5a7bUI/AAAAAAAAAGI/JgMtEn4V8mk/s1600-h/luit%5B44%5D.png"><img src="http://lh6.ggpht.com/_5Si8_iQ2HPI/TdvCVkAA4BI/AAAAAAAAAGM/yTOMfOe-8Sc/luit_thumb%5B42%5D.png?imgmax=800" alt="View BBS through luit" title="View BBS through luit"></a><a target="_blank" rel="noopener" href="http://lh6.ggpht.com/_5Si8_iQ2HPI/TdvCXIwGLjI/AAAAAAAAAGQ/PSSG1d8OZvY/s1600-h/screen%5B3%5D.png"><img src="http://lh3.ggpht.com/_5Si8_iQ2HPI/TdvCYNgzo1I/AAAAAAAAAGU/xPWu2J34j5E/screen_thumb%5B1%5D.png?imgmax=800" alt="View BBS through screen" title="View BBS through screen"></a></p>
+<p>左图是用luit登陆BBS时的惨状，右图是使用screen登陆BBS时的美景，真是对比出差距，不服不行啊……</p>
+<p>其实我一开始也纳闷，按道理这两软件在对问题的处理上，都是先打开两个PTY，一个是对子程序的，以后是输出给用户的，然后自己通过在中间倒腾数据的时候做了相应的转码，怎么差距这么大呢……原来是screen在处理这些图形字符(line drawing characters)的时候，人为的给每个图形字符后面加了一个空格(有兴趣的同学可以翻翻screen的源代码，真相在encoding.c这个文件的recode_char_dw函数中；或者自己抓包看看)，所以图形变美观了。至于为什么要交空格，这个要涉及到GBK编码的字符宽度问题，本来这些图形字符在GBK中应该是和汉字等宽的，结果转UTF-8之后变得和英文字母等宽了，要是不补这个空格的话就会和luit一样乱套了，所以前面说screen干的不仅仅局限在狭义的转字符集编码，还把这个问题也考虑进去了。</p>
+<p>好了，这么一说，screen太牛了，就算原生脚本支持不太好，用shell脚本(参见：<a target="_blank" rel="noopener" href="http://stackoverflow.com/questions/899609/gnu-screen-run-script-that-sends-commands-to-the-screen-session-it-is-being-run">Run script that sends commands to the screen session it is being run in</a>)凑合一下也行啊，可惜screen在encoding上有一个bug，当你想设置encoding之后的窗口中输入图形字符(比如&#96;&#96;※’’)的时候，这个符号会变成两个问号??，这可把我郁闷坏了，之前忍了好久了……其实这个bug在07年得时候就有人提交了，但是screen官方一直没动静，我翻了翻源代码，问题应该是处在encoding.c文件中的WinSwitchEncoding函数中，里面对字符宽度的计算出了问题，直接把这类图形字符变成了两个问号??，有兴趣的同学修改一下交给patch给开发者吧，功德无量啊~~</p>
+<p>有了“变问号”和“原生脚本支持不足”这两点，已经足够让人又造轮子的打算了。不过我写这个工具之前还是用Google搜了一遍，确保没有重复的造轮子，用了如下关键词：<code>screen tmux encoding’’，</code>luit encoding tmux’’，&#96;&#96;BBS ANSI tmux’’等等等等。</p>
+<p>确实没有找到现成的轮子，然后我就用python写了这个工具(里面包含了pexpect_ng.py文件，从pexpect修改而来)，里面对图形字符的处理和screen一样，用正则表达式在每个图形字符之后加一个空格；名字现在叫做seu_bbs，但是其实把seu_bbs.py这个文件中第159行的<code>bbs.seu.edu.cn’’改成你喜欢的BBS域名比如</code>bbs.newsmth.org’’，用来登陆任何华语BBS应该是不成问题的。文件打包在这里：<a target="_blank" rel="noopener" href="http://bbs.seu.edu.cn/bbscon.php?bid=22&amp;id=41059">seu_bbs.py 0.3版 &lt;挂站必备工具&gt;</a>，里面也有一些介绍，这里不罗嗦了，贴一下。.&#x2F;seu_bbs.py -h的输出：</p>
+<blockquote>
+<p>usage: seu_bbs.py [-h] [-a] [-e CHARSET] [-u USERNAME] [-t TIMEOUT] [-v]</p>
+<p>convert charset of BBS to locale</p>
+<p>optional arguments:<br>&#160; -h, –help&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; show this help message and exit<br>&#160; -a&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; whether or not seu_bbs.py take whole window.[default<br>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; disable]<br>&#160; -e CHARSET, –encoding CHARSET<br>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; Set up seu_bbs.py to use CHARSET encoding.[default<br>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; GB18030]<br>&#160; -u USERNAME, –username USERNAME<br>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; Set up seu_bbs.py to use USERNAME login bbs.[default<br>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; guest]<br>&#160; -t TIMEOUT, –timeout TIMEOUT<br>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; Do someting when idle(unit is seconds, negtive value<br>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; will be ignored).[default -1]<br>&#160; -v, –version  </p>
+</blockquote>
+<p>这个工具目前还是有一些问题的，在从BBS的GBK转码为UTF-8的过程中，个别字符序列会转换不成功，我还没有详细的去调试到底是什么字符(估计是控制字符或者图形字符)导致转码失败，不过python内置的unicode函数倒是可以比较漂亮的忽略这个别转码错误，所以暂时就不管了，以后有时间再说吧。同时这个脚本的存在可以取代以往使用expect进行挂站，所以是完全的绿色版啊(除了需要python版本新于2.3以外)</p>
+<p>最后要在赞一下pexpect模块的作者，代码的可读性太棒了！</p>
+<p>btw:关于screen和tmux的比较，有两篇文章已经讲的很好了：</p>
+<ol>
+<li><a target="_blank" rel="noopener" href="http://linuxtoy.org/archives/from-screen-to-tmux.html">[LinuxTOY]从 screen 切换到 tmux</a>2.  <a target="_blank" rel="noopener" href="http://www.wikivs.com/wiki/Screen_vs_tmux">Screen vs tmux</a></li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>Post author:  </strong>pt
+  </li>
+  <li class="post-copyright-link">
+      <strong>Post link: </strong>
+      <a href="https://wadarochi.github.io/2011/05/24/GNU-screen-encoding%E7%9A%84%E6%9B%BF%E4%BB%A3%E5%93%81%EF%BC%8C%E8%87%AA%E5%88%B6BBS%E8%BD%AC%E7%A0%81%E8%84%9A%E6%9C%AC/" title="GNU screen encoding的替代品，自制BBS转码脚本">https://wadarochi.github.io/2011/05/24/GNU-screen-encoding的替代品，自制BBS转码脚本/</a>
+  </li>
+  <li class="post-copyright-license">
+      <strong>Copyright Notice:  </strong>All articles in this blog are licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> unless stating additionally.
+  </li>
+</ul>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/linux/" rel="tag"># linux</a>
+              <a href="/tags/BBS/" rel="tag"># BBS</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2011/05/15/%E8%87%AA%E5%8A%A8%E5%AE%89%E8%A3%85gnuradio%E7%9A%84%E8%84%9A%E6%9C%AC/" rel="prev" title="自动安装gnuradio的脚本">
+                  <i class="fa fa-angle-left"></i> 自动安装gnuradio的脚本
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2011/10/06/%E5%9C%A8ubuntu%E4%B8%8A%E5%AE%89%E8%A3%85texlive%E5%92%8Cctex-kit/" rel="next" title="在ubuntu上安装texlive和ctex-kit">
+                  在ubuntu上安装texlive和ctex-kit <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 2010 – 
+    <span itemprop="copyrightYear">2023</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">pt</span>
+  </div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/wadarochi" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+
+
+  
+
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"wadarochi","repo":"wadarochi.github.io","client_id":"df6ea13dd26a14abff3e","client_secret":"ed1e7515cba034f250e623b87ac0ae5690ac4d8c","admin_user":"wadarochi","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":null,"js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"cf3a05c0a96b2ec2f42d36000fb16ec5"}</script>
+<script src="/js/third-party/comments/gitalk.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"wadarochi.github.io","root":"/","images":"/images","scheme":"Mist","darkmode":false,"version":"8.18.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":true,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"gitalk","storage":true,"lazyload":false,"nav":{"gitalk":{"order":-1}},"activeClass":"gitalk"},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="问题来源跳转，尤其是条件跳转有可能会打断CPU指令的流水线执行，所以在性能要求比较高的代码中，我都是系统尽量不要出现if，那实在要出现怎么办了，比如有如下代码： 1234for component in components:    # 判断是否要处理component数据    if component.enabled:        # do sth...  这种情况下我是应该写成上面这种形式">
+<meta property="og:type" content="article">
+<meta property="og:title" content="怎样写python的if语句比较高效？">
+<meta property="og:url" content="https://wadarochi.github.io/2017/10/15/effective-python-if/index.html">
+<meta property="og:site_name" content="PT&#39;s Blog">
+<meta property="og:description" content="问题来源跳转，尤其是条件跳转有可能会打断CPU指令的流水线执行，所以在性能要求比较高的代码中，我都是系统尽量不要出现if，那实在要出现怎么办了，比如有如下代码： 1234for component in components:    # 判断是否要处理component数据    if component.enabled:        # do sth...  这种情况下我是应该写成上面这种形式">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2017-10-14T17:49:38.000Z">
+<meta property="article:modified_time" content="2023-08-19T08:55:27.614Z">
+<meta property="article:author" content="pt">
+<meta property="article:tag" content="python">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://wadarochi.github.io/2017/10/15/effective-python-if/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://wadarochi.github.io/2017/10/15/effective-python-if/","path":"2017/10/15/effective-python-if/","title":"怎样写python的if语句比较高效？"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>怎样写python的if语句比较高效？ | PT's Blog</title>
+  
+
+  <script src="/js/third-party/analytics/baidu-analytics.js"></script>
+  <script async src="https://hm.baidu.com/hm.js?ffef4fbaef7cdb68f17096cb5f507f85"></script>
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">PT's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">嗷嗷嗷嗷嗷嗷嗷嗷</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="Search" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="home fa-fw"></i>Home</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="user fa-fw"></i>About</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="tags fa-fw"></i>Tags</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="th fa-fw"></i>Categories</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="archive fa-fw"></i>Archives</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%97%AE%E9%A2%98%E6%9D%A5%E6%BA%90"><span class="nav-number">1.</span> <span class="nav-text">问题来源</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Python%E8%A7%A3%E9%87%8A%E5%99%A8%E4%B8%ADif%E8%AF%AD%E5%8F%A5%E7%9A%84%E5%AE%9E%E7%8E%B0%E7%BB%86%E8%8A%82"><span class="nav-number">2.</span> <span class="nav-text">Python解释器中if语句的实现细节</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AD%97%E8%8A%82%E7%A0%81"><span class="nav-number">2.1.</span> <span class="nav-text">字节码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CPython%E7%9A%84%E5%BA%95%E5%B1%82%E5%AE%9E%E7%8E%B0"><span class="nav-number">2.2.</span> <span class="nav-text">CPython的底层实现</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Benchmark"><span class="nav-number">2.3.</span> <span class="nav-text">Benchmark</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="pt"
+      src="/img/avatar.png">
+  <p class="site-author-name" itemprop="name">pt</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">35</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">30</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wadarochi" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;wadarochi" rel="noopener me" target="_blank"><i class="github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:wadarochi@gmail.com" title="E-Mail → mailto:wadarochi@gmail.com" rel="noopener me" target="_blank"><i class="envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://wadarochi.github.io/2017/10/15/effective-python-if/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/img/avatar.png">
+      <meta itemprop="name" content="pt">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="PT's Blog">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="怎样写python的if语句比较高效？ | PT's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          怎样写python的if语句比较高效？
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2017-10-15 01:49:38" itemprop="dateCreated datePublished" datetime="2017-10-15T01:49:38+08:00">2017-10-15</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2023-08-19 16:55:27" itemprop="dateModified" datetime="2023-08-19T16:55:27+08:00">2023-08-19</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1 id="问题来源"><a href="#问题来源" class="headerlink" title="问题来源"></a>问题来源</h1><p>跳转，尤其是条件跳转有可能会打断CPU指令的流水线执行，所以在性能要求比较高的代码中，我都是系统尽量不要出现if，那实在要出现怎么办了，比如有如下代码：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> component <span class="keyword">in</span> components:</span><br><span class="line">    <span class="comment"># 判断是否要处理component数据</span></span><br><span class="line">    <span class="keyword">if</span> component.enabled:</span><br><span class="line">        <span class="comment"># do sth...</span></span><br></pre></td></tr></table></figure>
+
+<p>这种情况下我是应该写成上面这种形式，还是应该写成下面的形式呢，哪种更高效？</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> component <span class="keyword">in</span> components:</span><br><span class="line">    <span class="comment"># 判断是否要处理component数据</span></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> component.enabled:</span><br><span class="line">        <span class="keyword">continue</span></span><br><span class="line">    <span class="comment"># do sth...</span></span><br></pre></td></tr></table></figure>
+
+<p>别问我为什么性能要求比较高的时候还要用python，我也不想……那么假设我们知道条件为<code>True</code>和<code>False</code>的概率，哪一种比较高效？</p>
+<span id="more"></span>
+
+<h1 id="Python解释器中if语句的实现细节"><a href="#Python解释器中if语句的实现细节" class="headerlink" title="Python解释器中if语句的实现细节"></a>Python解释器中if语句的实现细节</h1><h2 id="字节码"><a href="#字节码" class="headerlink" title="字节码"></a>字节码</h2><p>上述的第一种编码方式更容易生成箭头型的代码，直观的解释就是下面这种：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> a <span class="keyword">in</span> balabala:</span><br><span class="line">    <span class="keyword">if</span> a.b:</span><br><span class="line">        <span class="keyword">if</span> a.c:</span><br><span class="line">            <span class="keyword">if</span> a.d:</span><br><span class="line">                <span class="comment"># do sth...</span></span><br></pre></td></tr></table></figure>
+
+<p>所以我们经常使用<code>Guard Clauses</code>的方式去规避这样的箭头型代码，看起来会比较漂亮一些，就是下面这种：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> a <span class="keyword">in</span> balabala:</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> a.b:</span><br><span class="line">        <span class="keyword">continue</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> a.c:</span><br><span class="line">        <span class="keyword">continue</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> a.d:</span><br><span class="line">        <span class="keyword">continue</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># do sth...</span></span><br></pre></td></tr></table></figure>
+
+<p>回到之前的问题，哪种比较高效？首先我们给出示例代码：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">In [<span class="number">1</span>]: <span class="keyword">from</span> dis <span class="keyword">import</span> dis</span><br><span class="line"></span><br><span class="line">In [<span class="number">2</span>]: <span class="keyword">class</span> <span class="title class_">Component</span>(<span class="title class_ inherited__">object</span>):</span><br><span class="line">   ...:     <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self</span>):</span><br><span class="line">   ...:         self.enabled = <span class="literal">True</span></span><br><span class="line">   ...:     <span class="keyword">def</span> <span class="title function_">update</span>(<span class="params">self, delta_time_s</span>):</span><br><span class="line">   ...:         <span class="keyword">pass</span></span><br><span class="line">   ...: </span><br><span class="line"></span><br><span class="line">In [<span class="number">3</span>]: components = [Component() <span class="keyword">for</span> idx <span class="keyword">in</span> xrange(<span class="number">10000</span>)]</span><br><span class="line"></span><br><span class="line">In [<span class="number">4</span>]: <span class="keyword">def</span> <span class="title function_">update_in_arrow_form</span>(<span class="params">delta_time_s</span>):</span><br><span class="line">   ...:     <span class="keyword">for</span> c <span class="keyword">in</span> components:</span><br><span class="line">   ...:         <span class="keyword">if</span> c.enabled:</span><br><span class="line">   ...:             c.update(delta_time_s)</span><br><span class="line">   ...: </span><br><span class="line"></span><br><span class="line">In [<span class="number">5</span>]: <span class="keyword">def</span> <span class="title function_">update_in_guard_clauses_form</span>(<span class="params">delta_time_s</span>):</span><br><span class="line">   ...:     <span class="keyword">for</span> c <span class="keyword">in</span> components:</span><br><span class="line">   ...:         <span class="keyword">if</span> <span class="keyword">not</span> c.enabled:</span><br><span class="line">   ...:             <span class="keyword">continue</span></span><br><span class="line">   ...:         c.update(delta_time_s)</span><br><span class="line">   ...:</span><br></pre></td></tr></table></figure>
+
+<p>在上边的代码中，我们模拟了一个遍历Component容器并且调用每一个Component的update方法(这种Component的设计是很糟糕的，状态和行为还是需要分割开来比较好，参考ECS)，遍历过程中需要判定Component是否需要处理，这就引入了分支逻辑。</p>
+<p>在看看字节码之前，我先根据过往教科书上的知识做一个猜想：<strong>引发分支预测错误少、分支预测错误代价小的写法，性能更好</strong>。</p>
+<p>然后我们来看看箭头型代码的字节码：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">In [<span class="number">6</span>]: dis(update_in_arrow_form)</span><br><span class="line">  <span class="number">2</span>           <span class="number">0</span> SETUP_LOOP              <span class="number">39</span> (to <span class="number">42</span>)</span><br><span class="line">              <span class="number">3</span> LOAD_GLOBAL              <span class="number">0</span> (components)</span><br><span class="line">              <span class="number">6</span> GET_ITER</span><br><span class="line">        &gt;&gt;    <span class="number">7</span> FOR_ITER                <span class="number">31</span> (to <span class="number">41</span>)</span><br><span class="line">             <span class="number">10</span> STORE_FAST               <span class="number">1</span> (c)</span><br><span class="line"></span><br><span class="line">  <span class="number">3</span>          <span class="number">13</span> LOAD_FAST                <span class="number">1</span> (c)</span><br><span class="line">             <span class="number">16</span> LOAD_ATTR                <span class="number">1</span> (enabled)</span><br><span class="line">             <span class="number">19</span> POP_JUMP_IF_FALSE       <span class="number">38</span></span><br><span class="line"></span><br><span class="line">  <span class="number">4</span>          <span class="number">22</span> LOAD_FAST                <span class="number">1</span> (c)</span><br><span class="line">             <span class="number">25</span> LOOKUP_METHOD            <span class="number">2</span> (update)</span><br><span class="line">             <span class="number">28</span> LOAD_FAST                <span class="number">0</span> (delta_time_s)</span><br><span class="line">             <span class="number">31</span> CALL_METHOD              <span class="number">1</span></span><br><span class="line">             <span class="number">34</span> POP_TOP</span><br><span class="line">             <span class="number">35</span> JUMP_ABSOLUTE            <span class="number">7</span></span><br><span class="line">        &gt;&gt;   <span class="number">38</span> JUMP_ABSOLUTE            <span class="number">7</span></span><br><span class="line">        &gt;&gt;   <span class="number">41</span> POP_BLOCK</span><br><span class="line">        &gt;&gt;   <span class="number">42</span> LOAD_CONST               <span class="number">0</span> (<span class="literal">None</span>)</span><br><span class="line">             <span class="number">45</span> RETURN_VALUE</span><br></pre></td></tr></table></figure>
+
+<p>可以看出只有在判断<code>c.enabled</code>为<code>False</code>的情况下，才需要跳转，假如<code>c.enabled</code>大概率为<code>True</code>的时候，类似逻辑写成箭头型符合之前的猜想，但是如果<code>c.enabled</code>大概率为<code>False</code>，就不符合了。</p>
+<p>那<code>Guard Clauses</code>这种写法呢？也看看字节码：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">In [<span class="number">7</span>]: dis(update_in_guard_clauses_form)</span><br><span class="line">  <span class="number">2</span>           <span class="number">0</span> SETUP_LOOP              <span class="number">42</span> (to <span class="number">45</span>)</span><br><span class="line">              <span class="number">3</span> LOAD_GLOBAL              <span class="number">0</span> (components)</span><br><span class="line">              <span class="number">6</span> GET_ITER</span><br><span class="line">        &gt;&gt;    <span class="number">7</span> FOR_ITER                <span class="number">34</span> (to <span class="number">44</span>)</span><br><span class="line">             <span class="number">10</span> STORE_FAST               <span class="number">1</span> (c)</span><br><span class="line"></span><br><span class="line">  <span class="number">3</span>          <span class="number">13</span> LOAD_FAST                <span class="number">1</span> (c)</span><br><span class="line">             <span class="number">16</span> LOAD_ATTR                <span class="number">1</span> (enabled)</span><br><span class="line">             <span class="number">19</span> POP_JUMP_IF_TRUE        <span class="number">28</span></span><br><span class="line"></span><br><span class="line">  <span class="number">4</span>          <span class="number">22</span> JUMP_ABSOLUTE            <span class="number">7</span></span><br><span class="line">             <span class="number">25</span> JUMP_FORWARD             <span class="number">0</span> (to <span class="number">28</span>)</span><br><span class="line"></span><br><span class="line">  <span class="number">5</span>     &gt;&gt;   <span class="number">28</span> LOAD_FAST                <span class="number">1</span> (c)</span><br><span class="line">             <span class="number">31</span> LOOKUP_METHOD            <span class="number">2</span> (update)</span><br><span class="line">             <span class="number">34</span> LOAD_FAST                <span class="number">0</span> (delta_time_s)</span><br><span class="line">             <span class="number">37</span> CALL_METHOD              <span class="number">1</span></span><br><span class="line">             <span class="number">40</span> POP_TOP</span><br><span class="line">             <span class="number">41</span> JUMP_ABSOLUTE            <span class="number">7</span></span><br><span class="line">        &gt;&gt;   <span class="number">44</span> POP_BLOCK</span><br><span class="line">        &gt;&gt;   <span class="number">45</span> LOAD_CONST               <span class="number">0</span> (<span class="literal">None</span>)</span><br><span class="line">             <span class="number">48</span> RETURN_VALUE</span><br></pre></td></tr></table></figure>
+
+<p>只要<code>c.enabled</code>为<code>True</code>，就会引发跳转，那么就和之前的箭头型代码反过来了：假如<code>c.enabled</code>大概率为<code>True</code>的时候，类似逻辑写成<code>Guard Clauses</code>型是不符合猜想的，但是如果<code>c.enabled</code>大概率为<code>False</code>，就符合猜想。</p>
+<p>虽然上面的例子没有加上<code>else</code>分支，但是如果你自己加上<code>else</code>分支，也是类似的字节码。</p>
+<h2 id="CPython的底层实现"><a href="#CPython的底层实现" class="headerlink" title="CPython的底层实现"></a>CPython的底层实现</h2><p>到目前为止，我们看到的都是字节码层面的内容，<code>CPython</code>底层<code>POP_JUMP_IF_TRUE</code>和<code>POP_JUMP_IF_FALSE</code>是如何处理跳转的呢？答案在<code>ceval.c</code>中，这里我只贴<code>POP_JUMP_IF_FALSE</code>相关的代码，<code>POP_JUMP_IF_TRUE</code>其实是类似的：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">PREDICTED(POP_JUMP_IF_FALSE);</span><br><span class="line">TARGET(POP_JUMP_IF_FALSE) &#123;</span><br><span class="line">    PyObject *cond = POP();</span><br><span class="line">    <span class="type">int</span> err;</span><br><span class="line">    <span class="keyword">if</span> (cond == Py_True) &#123;</span><br><span class="line">        Py_DECREF(cond);</span><br><span class="line">        FAST_DISPATCH();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (cond == Py_False) &#123;</span><br><span class="line">        Py_DECREF(cond);</span><br><span class="line">        JUMPTO(oparg);</span><br><span class="line">        FAST_DISPATCH();</span><br><span class="line">    &#125;</span><br><span class="line">    err = PyObject_IsTrue(cond);</span><br><span class="line">    Py_DECREF(cond);</span><br><span class="line">    <span class="keyword">if</span> (err &gt; <span class="number">0</span>)</span><br><span class="line">        ;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (err == <span class="number">0</span>)</span><br><span class="line">        JUMPTO(oparg);</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        <span class="keyword">goto</span> error;</span><br><span class="line">    DISPATCH();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>果然，字面意思就是如果判断为<code>False</code>我才跳转，<code>JUMPTO</code>只有在<code>cond == Py_False</code>的时候才会被调用到。</p>
+<p>那这么说，是不是意味着：<strong>最可能运行到的代码应该放到if分支中，箭头型代码比Guard Clauses重构过的代码性能要好？</strong></p>
+<h2 id="Benchmark"><a href="#Benchmark" class="headerlink" title="Benchmark"></a>Benchmark</h2><p>如果没有Benchmark，一切都只是猜想，因为一方面CPU的流水线分支预测非常复杂，还有乱序执行等等高级技术在里面；另一方面除了<code>JUMPTO</code>，上面解释执行Python代码的C代码中还有大量的<code>if-else</code>分支，也就是说只要出现这条字节码，对CPU就会多出非常多的分支。所以单从字节码层面的跳转分析可能是不准的，只好测一测了。</p>
+<p>这里我构造两组<code>components</code>，第一组只有每十个中只有一个<code>Component</code>的<code>enabled</code>为<code>True</code>，另一组反过来，然后看看运行时间的对比：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line">In [<span class="number">8</span>]: <span class="keyword">def</span> <span class="title function_">test_almost_true</span>(<span class="params">f</span>):</span><br><span class="line">   ...:     <span class="keyword">for</span> idx, component <span class="keyword">in</span> <span class="built_in">enumerate</span>(components):</span><br><span class="line">   ...:         <span class="keyword">if</span> idx % <span class="number">10</span> == <span class="number">0</span>:</span><br><span class="line">   ...:             component.enabled = <span class="literal">False</span></span><br><span class="line">   ...:         <span class="keyword">else</span>:</span><br><span class="line">   ...:             component.enabled = <span class="literal">True</span></span><br><span class="line">   ...:     <span class="keyword">return</span> timeit.repeat(<span class="keyword">lambda</span>: f(<span class="number">0</span>), number=<span class="number">10</span>)</span><br><span class="line">   ...:</span><br><span class="line"></span><br><span class="line">In [<span class="number">9</span>]: <span class="keyword">def</span> <span class="title function_">test_almost_false</span>(<span class="params">f</span>):</span><br><span class="line">   ...:     <span class="keyword">for</span> idx, component <span class="keyword">in</span> <span class="built_in">enumerate</span>(components):</span><br><span class="line">   ...:         <span class="keyword">if</span> idx % <span class="number">10</span> == <span class="number">0</span>:</span><br><span class="line">   ...:             component.enabled = <span class="literal">True</span> </span><br><span class="line">   ...:         <span class="keyword">else</span>:</span><br><span class="line">   ...:             component.enabled = <span class="literal">False</span></span><br><span class="line">   ...:     <span class="keyword">return</span> timeit.repeat(<span class="keyword">lambda</span>: f(<span class="number">0</span>), number=<span class="number">10</span>)</span><br><span class="line">   ...:</span><br><span class="line"></span><br><span class="line">In [<span class="number">10</span>]: a1 = test_almost_true(update_in_arrow_form)</span><br><span class="line"></span><br><span class="line">In [<span class="number">11</span>]: b1 = test_almost_true(update_in_guard_clauses_form)</span><br><span class="line"></span><br><span class="line">In [<span class="number">12</span>]: <span class="keyword">for</span> m, n <span class="keyword">in</span> <span class="built_in">zip</span>(a1, b1):</span><br><span class="line">    ...:     <span class="built_in">print</span> (m - n) / n * <span class="number">100.0</span></span><br><span class="line">    ...:</span><br><span class="line"><span class="number">23.0675013609</span></span><br><span class="line">-<span class="number">23.0445608311</span></span><br><span class="line">-<span class="number">16.3107397091</span></span><br><span class="line"><span class="number">30.4611497157</span></span><br><span class="line">-<span class="number">2.43304228392</span></span><br><span class="line">-<span class="number">4.31911240259</span></span><br><span class="line"><span class="number">79.3438445612</span></span><br><span class="line"></span><br><span class="line">In [<span class="number">13</span>]: <span class="keyword">def</span> <span class="title function_">no_branch</span>(<span class="params">delta_time_s</span>):</span><br><span class="line">    ...:     <span class="keyword">for</span> c <span class="keyword">in</span> components:</span><br><span class="line">    ...:         c.update(delta_time_s)</span><br><span class="line">    ...:</span><br><span class="line"></span><br><span class="line">In [<span class="number">14</span>]: g = test_almost_true(no_branch)</span><br><span class="line"></span><br><span class="line">In [<span class="number">15</span>]: <span class="keyword">for</span> m, n <span class="keyword">in</span> <span class="built_in">zip</span>(a1, g):</span><br><span class="line">    ...:     <span class="built_in">print</span> (m - n) / n * <span class="number">100</span></span><br><span class="line">    ...: </span><br><span class="line"><span class="number">204.991568297</span></span><br><span class="line"><span class="number">151.134771645</span></span><br><span class="line"><span class="number">209.973251815</span></span><br><span class="line"><span class="number">313.04</span></span><br><span class="line"><span class="number">303.284671533</span></span><br><span class="line"><span class="number">174.186222559</span></span><br><span class="line"><span class="number">357.392363932</span></span><br></pre></td></tr></table></figure>
+
+<p>&amp;*%^)$#，看起来在字节码和c代码层面根据跳转与否做出的猜想，与测试结果不一致…</p>
+<p>经过了非常多的测试，看起来在Intel i5平台上（移动版，性能很差，从上面的数据就可以看出来了），有这样的结论：</p>
+<ol>
+<li>即使在有先验概率支持的情况下，箭头型代码并不比<code>Guard Clauses</code>重构过的代码快，两者的测试看不出显著差别，那么我们还是继续使用<code>Guard Clauses</code>形式的代码好了；</li>
+<li>相对于没有分支的代码，有分支的代码要慢（相对百分之两三百，不过绝对值非常小），尽管没分支的测试代码多调用了11%的函数(这个和经验倒是吻合的)。</li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>Post author:  </strong>pt
+  </li>
+  <li class="post-copyright-link">
+      <strong>Post link: </strong>
+      <a href="https://wadarochi.github.io/2017/10/15/effective-python-if/" title="怎样写python的if语句比较高效？">https://wadarochi.github.io/2017/10/15/effective-python-if/</a>
+  </li>
+  <li class="post-copyright-license">
+      <strong>Copyright Notice:  </strong>All articles in this blog are licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> unless stating additionally.
+  </li>
+</ul>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/python/" rel="tag"># python</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2017/09/27/python-faster-way/" rel="prev" title="Python: Faster Way">
+                  <i class="fa fa-angle-left"></i> Python: Faster Way
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2017/10/15/fcitx-on-gnome-shell/" rel="next" title="GNOME Shell 3.24中的GTK程序也可以用fcitx啦">
+                  GNOME Shell 3.24中的GTK程序也可以用fcitx啦 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 2010 – 
+    <span itemprop="copyrightYear">2023</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">pt</span>
+  </div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/wadarochi" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+
+
+  
+
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"wadarochi","repo":"wadarochi.github.io","client_id":"df6ea13dd26a14abff3e","client_secret":"ed1e7515cba034f250e623b87ac0ae5690ac4d8c","admin_user":"wadarochi","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":null,"js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"cfff21a9f5c7e184689fbec1a4b5459f"}</script>
+<script src="/js/third-party/comments/gitalk.js"></script>
+
+</body>
+</html>
